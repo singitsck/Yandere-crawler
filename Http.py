@@ -1,4 +1,5 @@
 import logging
+from typing import Optional, Tuple
 from urllib.parse import unquote
 from asyncio import sleep
 from random import uniform
@@ -19,7 +20,7 @@ async def sleep_backoff(sleep_time: int) -> int:
     return sleep_time
 
 
-async def asyncget(session: ClientSession, url: str, special_headers: dict = None, retry_count: int = 10, retry_delay: int = 1) -> tuple[bytes | None, int]:
+async def asyncget(session: ClientSession, url: str, special_headers: dict = None, retry_count: int = 10, retry_delay: int = 1) -> Tuple[Optional[bytes], int]:
     """
     HTTP GET获取
     :param session: aiohttp.ClientSession, 复用连接

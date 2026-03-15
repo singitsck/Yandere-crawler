@@ -7,6 +7,7 @@ from time import time, strftime
 from json import loads, dumps
 from os import makedirs, listdir, rename
 from os.path import exists, join, splitext
+from typing import Optional, Union
 from aiofiles import open as aopen
 from aiohttp import ClientSession
 from Http import decode
@@ -101,7 +102,7 @@ class api_crawler:
     async def next_page(self) -> bool:
         return False
 
-    async def get_data(self, url: str) -> list | dict | None:
+    async def get_data(self, url: str) -> Optional[Union[list, dict]]:
         # 从json接口获取posts并序列化，若未出错则返回posts列表，否则返回None对象。错误处理在主函数中进行
         if self.session is None:
             self.session = ClientSession(headers=headers)
@@ -116,12 +117,12 @@ class api_crawler:
             logging.error(f'解码失败: {url}')
             return None
 
-    async def _get_post_without_filter(self) -> dict | None:
+    async def _get_post_without_filter(self) -> Optional[dict]:
         if not self.payload and not await self.next_page():
             return None
         return self.payload.pop(0)
 
-    async def get_post(self) -> dict | None:
+    async def get_post(self) -> Optional[dict]:
         if not self.payload:
             return None
         while post := await self._get_post_without_filter():
@@ -154,7 +155,7 @@ class pool_crawler(api_crawler):
         if not exists(self.output_folder):
             makedirs(self.output_folder)
 
-    async def get_page(self) -> dict | None:
+    async def get_page(self) -> Optional[dict]:
         logging.warning(f"正在读取pool: {self.pool_id}")
         return await self.get_data(f"https://yande.re/pool/show.json?id={self.pool_id}")
 
@@ -259,7 +260,7 @@ class post_crawler(api_crawler):
         # 所有条件满足
         return True
 
-    async def get_page(self) -> list | None:
+    async def get_page(self) -> Optional[list]:
         logging.warning(f"正在读取第{self.page}页……")
         url = f"https://yande.re/post.json?tags={self.tags_str}&page={self.page}" if self.flag_tag_search else f"https://yande.re/post.json?page={self.page}"
         return await self.get_data(url)
