@@ -209,7 +209,9 @@ class post_crawler(api_crawler):
         # pending判断
         # 发现其他状态类型，将判断条件从“仅active”改为“排除pending”
         if self._filter["status_check"] and post["status"] == 'pending':
-            logging.info(f"{post['id']} is {post['status']}，跳过。原因：{post['flag_detail']['reason']}")
+            flag_detail = post.get("flag_detail")
+            reason = flag_detail.get("reason", "") if isinstance(flag_detail, dict) else ""
+            logging.info(f"{post['id']} is {post['status']}，跳过。原因：{reason}")
             return False
         # 分级判断, safe, questionable, explicit
         if self._filter["safe_mode"] and post["rating"] == 'e':
